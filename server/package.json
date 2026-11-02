@@ -1,0 +1,36 @@
+{
+  "name": "privacylens-server",
+  "version": "0.1.0",
+  "description": "Backend API server for PrivacyLens (Problem Statement C18 - Terms and Conditions in Plain Language)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
+  },
+  "keywords": [
+    "privacylens",
+    "privacy-policy",
+    "terms-and-conditions",
+    "prompt-engineering",
+    "chrome-extension"
+  ],
+  "author": "Team ladybug (Bennett University - SCSE4041)",
+  "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@google/genai": "^2.32.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "openai": "^4.86.1",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

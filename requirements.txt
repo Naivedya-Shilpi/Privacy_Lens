@@ -1,0 +1,6 @@
+# PrivacyLens — Python Dependencies for Evaluation & Dataset Scripts
+# Used by:
+#   - scripts/prepare-evaluation-dataset.py
+#   - scripts/verify-evaluation-partitions.py
+pandas>=2.0.0
+openpyxl>=3.1.0

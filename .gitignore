@@ -1,0 +1,94 @@
+# =============================================================================
+# PrivacyLens — Root .gitignore
+# =============================================================================
+
+# 1. Node.js Dependencies (Note: package-lock.json is intentionally tracked for `npm ci`)
+node_modules/
+server/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 2. Environment Variables & Local Secrets (Keep .env.example tracked)
+.env
+.env.local
+.env.*.local
+.env.*
+!.env.example
+server/.env
+server/.env.local
+server/.env.*.local
+server/.env.*
+!server/.env.example
+*.pem
+*.key
+secrets.json
+credentials.json
+
+# 3. Python Cache & Virtual Environments
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+.venv/
+env/
+ENV/
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# 4. Third-Party Research Datasets & Locally Generated Bulk Policy CSVs
+#    (Original PDFs, Excel spreadsheets, and bulk-extracted clause CSVs are kept
+#     local-only for copyright/redistribution safety; READMEs and scripts are tracked)
+datasets/Annotated Privacy Policies of 100 Online Platforms/
+datasets/raw/
+datasets/**/*.pdf
+datasets/**/*.xlsx
+datasets/**/*.xls
+datasets/**/*.docx
+datasets/**/*.zip
+datasets/**/*.tar.gz
+!datasets/README.md
+evaluation/dataset/annotated-test-cases.csv
+evaluation/dataset/annotation-comparison.csv
+
+# 5. Build, Distribution & Extension Packaging Outputs
+dist/
+build/
+out/
+*.crx
+*.zip
+*.tgz
+
+# 6. Logs, Runtime Data & Temporary / Test Outputs
+logs/
+*.log
+pids
+*.pid
+*.seed
+*.pid.lock
+tmp/
+temp/
+.cache/
+coverage/
+.nyc_output/
+*.tmp
+*.bak
+
+# 7. OS & Editor / IDE Specific Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace

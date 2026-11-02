@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PrivacyLens</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="app-container">
+    <header class="header">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <circle cx="12" cy="11" r="3"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>PrivacyLens</h1>
+          <span class="badge">v0.1.0 Foundation</span>
+        </div>
+      </div>
+      <div id="status-pill" class="status-pill status-unknown" title="Backend Server Connection Status">
+        <span class="status-dot"></span>
+        <span id="status-text">Unchecked</span>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="card description-card">
+        <h2>Terms &amp; Privacy in Plain Language</h2>
+        <p>
+          PrivacyLens helps you understand website privacy policies and terms of service before you agree—highlighting data collection, usage, third-party sharing, user rights, and notable clauses with original policy excerpts.
+        </p>
+        <p class="disclaimer">
+          Informational companion only. Does not provide legal advice or automated legal compliance guarantees.
+        </p>
+      </section>
+
+      <section class="card actions-card">
+        <button id="analyze-btn" class="btn btn-primary" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <span>Analyze This Page</span>
+        </button>
+
+        <button id="test-conn-btn" class="btn btn-secondary" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+          <span>Test Server Connection</span>
+        </button>
+      </section>
+
+      <section id="feedback-panel" class="card feedback-card" aria-live="polite">
+        <div class="feedback-header">
+          <span id="feedback-title" class="feedback-title">System Status</span>
+        </div>
+        <p id="feedback-message" class="feedback-message">
+          Ready. Click "Test Server Connection" to verify the local backend, or "Analyze This Page" to test active tab inspection.
+        </p>
+        <pre id="feedback-details" class="feedback-details hidden"></pre>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Team ladybug • Problem C18</span>
+      <span>SCSE4041</span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

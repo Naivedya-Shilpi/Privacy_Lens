@@ -1,0 +1,56 @@
+{
+  "testCaseId": "SYNTH-001",
+  "title": "NovaNote Cloud Workspace — Fictional Privacy Policy & Terms",
+  "isSynthetic": true,
+  "description": "A fictional privacy policy created for deterministic testing of PrivacyLens prompt versions. Includes explicit data collection/sharing clauses, intentionally vague/risky clauses, and an intentional omission of data retention duration.",
+  "metadata": {
+    "fictionalCompany": "NovaNote Labs Inc.",
+    "effectiveDate": "2026-01-15",
+    "documentType": "Privacy Policy"
+  },
+  "policyText": "NOVANOTE LABS PRIVACY POLICY\nEffective Date: January 15, 2026\n\n1. INFORMATION WE COLLECT\nWhen you register for NovaNote Cloud Workspace, we collect your full name, email address, billing postal code, and device identifiers. While you use our note-taking editor, we also collect usage telemetry, keystroke timing metadata, and approximate geolocation derived from your IP address. If you enable voice-to-text notes, we temporarily process your audio recordings.\n\n2. HOW WE USE YOUR INFORMATION\nWe use the collected information to provide and synchronize your workspace across devices, process subscription payments, troubleshoot technical errors, and train our proprietary text-prediction and automated summarization algorithms.\n\n3. SHARING OF INFORMATION WITH THIRD PARTIES\nWe share your email address and device identifiers with third-party advertising networks and analytics partners to measure campaign performance and deliver tailored promotions across external websites. We may also transfer user account data to corporate affiliates or an acquiring entity in the event of a merger, reorganization, or asset sale.\n\n4. USER RIGHTS AND CHOICES\nYou may request a copy of your account profile data or ask us to delete your account by emailing privacy-requests@novanote.example. However, copies of notes that have already been incorporated into our aggregated machine-learning training sets cannot be retroactively removed after deletion.\n\n5. POLICY UPDATES AND DISPUTES\nWe reserve the right to modify this Privacy Policy at any time at our sole discretion without prior individual notice; continued use of NovaNote constitutes acceptance of any updated terms. By using the service, you waive the right to participate in any class-action lawsuit and agree that all disputes shall be resolved exclusively through binding arbitration.",
+  "expectedGroundTruth": {
+    "dataCollected": [
+      "Full name, email address, and billing postal code",
+      "Device identifiers",
+      "Usage telemetry and keystroke timing metadata",
+      "Approximate geolocation derived from IP address",
+      "Audio recordings when voice-to-text is enabled"
+    ],
+    "dataUsage": [
+      "Provide and synchronize workspace across devices",
+      "Process subscription payments and troubleshoot technical errors",
+      "Train proprietary text-prediction and automated summarization algorithms"
+    ],
+    "thirdPartySharing": [
+      "Email address and device identifiers shared with third-party advertising networks and analytics partners",
+      "Account data may be transferred to affiliates or acquiring entities during a merger, reorganization, or asset sale"
+    ],
+    "userRights": [
+      "Right to request a copy of account profile data",
+      "Right to request account deletion via email, subject to an exception for data already incorporated into ML training sets"
+    ],
+    "riskyOrUnclearClauses": [
+      {
+        "topic": "AI Training & Irreversible Retention in ML Sets",
+        "reason": "User notes are used to train proprietary algorithms and cannot be removed from training sets even after account deletion.",
+        "supportingExcerpt": "However, copies of notes that have already been incorporated into our aggregated machine-learning training sets cannot be retroactively removed after deletion."
+      },
+      {
+        "topic": "Unilateral Policy Changes Without Notice",
+        "reason": "The company can change privacy terms at any time without notifying users directly.",
+        "supportingExcerpt": "We reserve the right to modify this Privacy Policy at any time at our sole discretion without prior individual notice; continued use of NovaNote constitutes acceptance of any updated terms."
+      },
+      {
+        "topic": "Mandatory Arbitration & Class-Action Waiver",
+        "reason": "Restricts users' legal remedies by waiving class-action participation and requiring binding arbitration.",
+        "supportingExcerpt": "By using the service, you waive the right to participate in any class-action lawsuit and agree that all disputes shall be resolved exclusively through binding arbitration."
+      }
+    ],
+    "missingInformation": [
+      "Specific data retention periods (how long account profile data, usage telemetry, keystroke timing metadata, or audio recordings are stored)",
+      "Security or encryption measures used to protect stored notes",
+      "Opt-out mechanisms for third-party advertising data sharing or AI model training"
+    ]
+  }
+}
