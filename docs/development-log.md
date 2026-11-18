@@ -140,3 +140,40 @@
 4. **GitHub Publication:**
    - Configured `origin` remote (`https://github.com/Naivedya-Shilpi/Privacy_Lens.git`), performed pre-push security checks, committed all collaboration-ready files, and pushed `main` to GitHub.
 
+---
+
+## Phase 6: Full-Stack AI Pipeline, Local-First Ollama Architecture & Persistent History
+
+**Date:** 2026-11-18  
+**Status:** Completed, Verified & Synchronized to GitHub
+
+### Completed Tasks
+
+1. **Task 1.1 — Real Gemini API Provider Integration (`server/src/services/ai/gemini.provider.js`):**
+   - Implemented `GeminiProvider.complete({ systemPrompt, userPrompt, jsonMode, temperature })` using `@google/genai@2.32.0` (`gemini-2.5-flash`) with structured JSON response config, safety/empty-response handling, and token usage extraction.
+   - Updated `BaseAIProvider` (`provider-interface.js`) and `env.js` while keeping all API keys strictly inside `server/.env`.
+
+2. **Task 1.2 — V1/V2/V3 Prompt Orchestration Engine & Zod Validation (`server/src/services/prompt/`):**
+   - Created [`server/src/services/prompt/schemas.js`](../server/src/services/prompt/schemas.js) defining strict Zod validation schemas and JSON Schema contracts for Stage 1 (`stage1ExtractionSchema`), Stage 2 (`stage2AnalysisSchema`), Stage 3 (`stage3CandidateSchema`), Stage 4 (`stage4VerifiedSchema`), and V1 (`v1NormalizedSchema`).
+   - Created [`server/src/services/prompt/prompt-runner.js`](../server/src/services/prompt/prompt-runner.js) to load the unmodified prompt templates from `prompts/versions/baseline-v1.md`, `chained-v2.md`, and `verified-v3.md`, execute **V1** (`1` call + deterministic normalizer), **V2** (`3` sequential calls), and **V3** (`4` sequential calls with Stage 4 Grounding Auditor), and enforce epistemic metadata (`verificationStatus` and `verified`).
+
+3. **Task 1.3 — `POST /api/analyze` Backend Endpoint (`server/src/routes/analyze.routes.js`):**
+   - Created `POST /api/analyze` with Zod request validation (`policyText` 40–60,000 characters, `promptVersion` `v1|v2|v3`, optional `provider` and `pageMetadata`), an in-memory IP rate limiter (`15` requests per `10` minutes), a 240-second socket timeout for multi-stage runs, and structured HTTP error responses (`400`, `422`, `429`, `502`, `503`).
+   - Mounted `/api` analysis routes in [`server/src/app.js`](../server/src/app.js).
+
+4. **Task 1.4 — Chrome Extension DOM Policy Extraction & Live Results UI (`extension/`):**
+   - Implemented full DOM policy extraction in [`extension/content/extractor.js`](../extension/content/extractor.js) prioritizing `<article>`, `<main>`, and policy content containers while removing navigation, footer, script, style, and cookie-banner clutter and preserving paragraph/list formatting (`80` to `58,000` characters).
+   - Updated [`extension/popup/popup.html`](../extension/popup/popup.html), [`popup.css`](../extension/popup/popup.css), and [`popup.js`](../extension/popup/popup.js) with V1/V2/V3 prompt selector, extraction preview, stage-aware loading indicator, and safe DOM rendering (`document.createElement` + `textContent`; zero `innerHTML`) for all 9 analysis sections.
+
+5. **Local-First Ollama AI Architecture (`server/src/services/ai/ollama.provider.js`):**
+   - Implemented [`OllamaProvider`](../server/src/services/ai/ollama.provider.js) connecting to `POST http://localhost:11434/api/chat` with `qwen2.5:3b` (`num_ctx: 8192`), strict localhost-only URL validation, and `checkHealth()` verifying `/api/tags` and `/api/ps`.
+   - Verified 100% GPU offloading on a 4 GB VRAM GPU (`2,291 MiB` VRAM used) across V1 (`1` call), V2 (`3` calls), and V3 (`4` calls) on `SYNTH-001` as well as live webpage extraction and analysis.
+   - Configured `ollama` (`qwen2.5:3b`) as the default provider across backend and Chrome extension while preserving `gemini` (`gemini-2.5-flash`) strictly as an explicit manual fallback (never auto-falling back).
+
+6. **Persistent Analysis Results & Local History (`extension/popup/storage-manager.js`):**
+   - Added `"storage"` permission in [`extension/manifest.json`](../extension/manifest.json) (`v0.2.0`) and created [`extension/popup/storage-manager.js`](../extension/popup/storage-manager.js) using `chrome.storage.local` (`privacylens_analysis_history` and `privacylens_runtime_state`).
+   - Implemented URL normalization (`normalizeUrlKey`), automatic saving of completed V1/V2/V3 analyses, automatic restoration of saved results when reopening the popup or switching back to a previously analyzed tab (`0` redundant AI calls), a **Saved Result** indicator banner, and a **Re-Analyze Page** trigger.
+   - Built the **History (`N`)** view in the extension popup storing up to **20** recent analyses (newest first) with instant offline report viewing, individual entry deletion, confirmed **Clear All**, storage quota auto-pruning, and interrupted/failed run recovery that preserves previous completed results.
+   - Verified via the 14-test automated storage & history test suite and manual end-to-end verification in Google Chrome.
+
+

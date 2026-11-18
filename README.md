@@ -11,23 +11,38 @@
 
 **PrivacyLens** is an academic prompt-engineering research project and Chrome Manifest V3 browser extension companion designed to help ordinary internet users understand website privacy policies and terms of service before agreeing to them.
 
-Internet users routinely accept lengthy, complex legal policies without understanding what personal data is collected, how it is used, whether it is shared with third parties, how long it is stored, or what rights they have. **PrivacyLens** addresses **Problem Statement C18 (Terms and Conditions in Plain Language)** by combining a lightweight browser extension frontend, a provider-independent Node.js/Express backend, and a rigorously evaluated multi-stage prompt engineering pipeline.
+Internet users routinely accept lengthy, complex legal policies without understanding what personal data is collected, how it is used, whether it is shared with third parties, how long it is stored, or what rights they have. **PrivacyLens** addresses **Problem Statement C18 (Terms and Conditions in Plain Language)** by combining a lightweight browser extension frontend, a local-first Node.js/Express backend powered by **Ollama (`qwen2.5:3b`)** (with optional manual **Google Gemini (`gemini-2.5-flash`)** fallback), a multi-stage prompt orchestration engine (**Prompt V1, V2, and V3**), and persistent local analysis history (`chrome.storage.local`).
 
-When fully integrated, PrivacyLens analyzes a website's policy upon explicit user request and generates:
+When a user clicks **Analyze This Page** on a privacy policy or terms of service webpage, PrivacyLens extracts the document text from the live DOM, runs the selected prompt version, persists the completed analysis locally in the browser, and renders:
 - A simple, plain-language executive summary.
 - Clear breakdowns of **data collection** and **data usage purposes**.
 - Transparency into **third-party data sharing**.
 - Information on **data retention** and **user rights**.
-- Identification of **potentially risky, vague, or broad clauses** with calibrated explanations of why they warrant user attention.
+- Identification of **potentially risky, vague, or broad clauses** with calibrated severity badges and plain-language explanations of why they warrant user attention.
 - **Verbatim supporting excerpts** from the original policy backing every key finding, alongside explicit `"Not specified"` reporting for omitted information.
+- **Stage 4 Verification Audit Notes** (when running Prompt V3) showing verified grounding and any unsupported claims removed.
 
 ---
 
 ## 2. Getting Started in 5 Minutes (Teammate Quick-Start Guide)
 
-New teammates can clone, install, run, and verify the current PrivacyLens implementation in under 5 minutes. No AI API keys are required to run the current foundation.
+New teammates can clone, install, run, and verify the complete local-first PrivacyLens pipeline in under 5 minutes. No paid cloud API keys are required because PrivacyLens runs locally by default using **Ollama (`qwen2.5:3b`)**.
 
-### Option A: One-Command Automated Setup (Windows PowerShell)
+### Step 1: Ensure Ollama & `qwen2.5:3b` Are Running Locally
+
+1. Install [Ollama](https://ollama.com/) (`http://localhost:11434`).
+2. Pull the default local model (`qwen2.5:3b`, ~1.9 GB):
+   ```powershell
+   ollama pull qwen2.5:3b
+   ```
+3. Verify the model is available:
+   ```powershell
+   ollama list
+   ```
+
+### Step 2: Clone & Set Up Backend (`server/`)
+
+#### Option A: One-Command Automated Setup (Windows PowerShell)
 
 ```powershell
 # 1. Clone the repository and enter the project directory
@@ -42,9 +57,9 @@ Set-Location -Path ".\server"
 npm start
 ```
 
-### Option B: Manual Step-by-Step Setup
+#### Option B: Manual Step-by-Step Setup
 
-#### Windows PowerShell
+##### Windows PowerShell
 ```powershell
 # 1. Clone repository
 git clone https://github.com/Naivedya-Shilpi/Privacy_Lens.git
@@ -61,7 +76,7 @@ Copy-Item -Path ".\.env.example" -Destination ".\.env"
 npm start
 ```
 
-#### macOS / Linux (bash / zsh)
+##### macOS / Linux (bash / zsh)
 ```bash
 git clone https://github.com/Naivedya-Shilpi/Privacy_Lens.git
 cd Privacy_Lens/server
@@ -70,43 +85,40 @@ cp .env.example .env
 npm start
 ```
 
-### Verify Backend & Load Chrome Extension (2 Minutes)
-1. **Verify Backend Health (in a second PowerShell window):**
+### Step 3: Verify Backend & Load Chrome Extension (2 Minutes)
+1. **Verify Backend & Local AI Health (in a second PowerShell window):**
    ```powershell
-   Invoke-RestMethod -Uri "http://localhost:3000/api/health" -Method Get | ConvertTo-Json -Depth 4
+   Invoke-RestMethod -Uri "http://localhost:3000/api/health" -Method Get | ConvertTo-Json -Depth 5
    ```
-   *(Expected: `"status": "healthy"`, `"application": "PrivacyLens"`.)*
+   *(Expected: `"status": "healthy"`, `"defaultProvider": "ollama"`, `"ollama": { "reachable": true, "modelInstalled": true, "configuredModel": "qwen2.5:3b" }`.)*
 2. **Load Chrome Extension:**
    - Open Google Chrome and go to `chrome://extensions/`.
    - Toggle **Developer mode** ON (top-right corner).
    - Click **Load unpacked** (top-left) and select the `<repo-root>\extension` folder.
-   - Open any `http://` or `https://` webpage, click the **PrivacyLens** toolbar icon, and verify that the header badge displays **Connected** (green).
+   - Open any `http://` or `https://` privacy policy webpage (e.g., `https://www.mozilla.org/en-US/privacy/websites/`), click the **PrivacyLens** toolbar icon, and verify that the header badge displays **Connected** (green) and **`Local AI: Ollama • Qwen2.5 3B`** (`Ready`).
 3. **What Works Right Now:**
-   - Live health check between the Chrome extension popup and the Express server (`GET /api/health`).
-   - On-demand active tab inspection via **Analyze This Page** (`activeTab` + `scripting`), which verifies page access and honestly reports that live AI policy analysis is not connected yet.
+   - Live health check between the Chrome extension popup, the Express server (`GET /api/health`), and local Ollama (`http://localhost:11434`).
+   - On-demand active tab policy extraction via **Analyze This Page** (`activeTab` + `scripting`) in `extension/content/extractor.js`.
+   - End-to-end **Prompt V1** (`1` call + deterministic normalizer), **Prompt V2** (`3` sequential calls), and **Prompt V3** (`4` sequential calls with Stage 4 Grounding Auditor) execution via `POST /api/analyze` using local **Ollama (`qwen2.5:3b`)** by default (or optional manual **Gemini (`gemini-2.5-flash`)** fallback).
+   - **Persistent Analysis Results & Local History (`chrome.storage.local`):** Automatic saving of completed analyses, zero-call automatic restoration when reopening the popup or returning to a previously analyzed URL, **Re-Analyze Page** trigger, and a **20-entry History panel** with offline viewing, individual deletion, and confirmed **Clear All**.
    - Offline dataset preparation and partition verification scripts (`scripts/prepare-evaluation-dataset.py` and `scripts/verify-evaluation-partitions.py`).
 
 ---
 
-## 3. Project Status: Implemented vs. Prepared vs. Planned
+## 3. Project Status: Implemented vs. Pending Evaluation Milestones
 
-To maintain strict academic transparency, PrivacyLens clearly distinguishes between what is **implemented and running**, what is **designed/prepared**, and what is **planned for upcoming phases**:
+To maintain strict academic transparency, PrivacyLens clearly distinguishes between what is **implemented and running end-to-end** and what remains **pending for the Milestone 2/3 benchmark evaluation runs**:
 
 ### 3.1 Implemented Functionality (Active & Runnable Today)
-- **Chrome Extension Foundation (`extension/`):** Valid Manifest V3 extension with minimal permissions (`activeTab`, `scripting`; no `<all_urls>`), navy/white/blue popup UI, live backend status indicator, **Test Server Connection** button, and **Analyze This Page** on-demand script injection placeholder.
-- **Express Backend Server (`server/`):** Node.js/Express API bound to `localhost:3000` with `helmet` security headers, origin-restricted `cors` for Chrome extensions, `zod` environment validation, centralized error handling, and `GET /api/health`.
-- **Reproducible Evaluation Dataset & Partition Scripts (`scripts/`):** Python scripts (`prepare-evaluation-dataset.py` and `verify-evaluation-partitions.py`) using `pandas` and `openpyxl` to process the 100-platform research corpus into 718 usable clause test cases (`580` consensus clauses) and verify disjoint calibration (`10` clauses) and held-out evaluation (`498` English / `570` multilingual) partitions.
-
-### 3.2 Prepared & Specified Functionality (Ready for Integration)
-- **Provider-Independent AI Adapter Layer (`server/src/services/ai/`):** Abstract `BaseAIProvider` interface and official SDK adapter classes (`openai.provider.js`, `gemini.provider.js`, `claude.provider.js`) initialized without making live paid API calls.
+- **Chrome Extension & Persistent Local History (`extension/`):** Manifest V3 (`v0.2.0`) extension with minimal permissions (`activeTab`, `scripting`, `storage`; no `<all_urls>`), DOM policy text extractor (`content/extractor.js`), V1/V2/V3 prompt selector, safe DOM result rendering (`document.createElement` + `textContent`), automatic URL-keyed result restoration (`popup/storage-manager.js`), and a 20-entry local history manager (`chrome.storage.local`).
+- **Express Backend & Prompt Orchestrator (`server/`):** Node.js/Express API bound to `localhost:3000` with `helmet` security headers, origin-restricted `cors` for Chrome extensions, `zod` request & output validation (`services/prompt/schemas.js`), multi-stage V1/V2/V3 prompt runner (`services/prompt/prompt-runner.js`), `GET /api/health`, and `POST /api/analyze` (`routes/analyze.routes.js`).
+- **Local-First AI Layer (`server/src/services/ai/`):** Primary `OllamaProvider` (`ollama.provider.js`, `qwen2.5:3b` at `http://localhost:11434`, `num_ctx: 8192`) and optional manual fallback `GeminiProvider` (`gemini.provider.js`, `gemini-2.5-flash` via `@google/genai`), with zero automatic fallback to cloud APIs when local mode is selected.
 - **Prompt Engineering Core (`prompts/`):** Complete specifications for **Prompt V1 (`baseline-v1.md`)**, **Prompt V2 (`chained-v2.md` — 3-stage sequential chain)**, **Prompt V3 (`verified-v3.md` — 4-stage pipeline with independent accuracy/grounding auditor)**, and the canonical `PrivacyLensUnifiedAnalysis` JSON schema (`prompt-workflow.md`).
-- **10-Metric Evaluation Framework & Calibration Suite (`evaluation/`):** Detailed `0–2` scoring rubric (**M1–M10**), evaluation protocol, pre-registered experimental design, score-sheet templates, and 4-scorer calibration guides.
+- **10-Metric Evaluation Framework & Reproducible Dataset Scripts (`evaluation/`, `scripts/`):** Detailed `0–2` scoring rubric (**M1–M10**), evaluation protocol, pre-registered experimental design, 4-scorer calibration guides, and Python scripts (`prepare-evaluation-dataset.py` and `verify-evaluation-partitions.py`) processing the 100-platform corpus into 718 usable clause test cases (`580` consensus clauses) across disjoint calibration (`10` clauses) and held-out evaluation (`498` English / `570` multilingual) partitions.
 
-### 3.3 Planned Functionality (Under Development for Future Phases)
-- Full DOM privacy-policy text extraction and boilerplate stripping in `extension/content/extractor.js`.
-- Backend `POST /api/analyze` endpoint orchestrating V1, V2, and V3 prompt execution across AI providers (and/or local Ollama models).
-- Interactive popup results UI displaying categorized plain-language summaries, risk explanations, `"Not specified"` flags, and verbatim supporting excerpts.
-- Execution of the pre-registered calibration and held-out benchmark experiments across models.
+### 3.2 Pending Academic Evaluation Milestones (Milestone 2 / Milestone 3)
+- Execution of the pre-registered 4-scorer human calibration phase (`10` dev clauses + `SYNTH-001`) and calculation of inter-annotator agreement.
+- Execution of the full held-out V1 vs. V2 vs. V3 benchmark evaluation experiments and population of the empirical result tables in `evaluation/experiment-design.md`.
 
 ---
 
@@ -114,9 +126,10 @@ To maintain strict academic transparency, PrivacyLens clearly distinguishes betw
 
 | Layer | Technologies Used |
 | :--- | :--- |
-| **Browser Extension** | Chrome Extension Manifest V3, HTML5, CSS3, Vanilla JavaScript |
+| **Browser Extension** | Chrome Extension Manifest V3 (`v0.2.0`), HTML5, CSS3, Vanilla JavaScript, `chrome.storage.local` |
 | **Backend API** | Node.js (`>=18.0.0`, tested on `v22.19.0`), Express.js (`^4.21.2`), `cors`, `helmet`, `dotenv`, `zod` |
-| **AI SDK Foundations** | `openai` (`^4.86.1`), `@google/genai` (`^2.32.0`), `@anthropic-ai/sdk` (`^0.39.0`) |
+| **Primary Local AI Provider** | **Ollama** (`http://localhost:11434/api/chat`), Model: **`qwen2.5:3b`** (`num_ctx: 8192`) |
+| **Optional Cloud AI SDKs** | `@google/genai` (`^2.32.0`, `gemini-2.5-flash` manual fallback), `openai` (`^4.86.1`), `@anthropic-ai/sdk` (`^0.39.0`) |
 | **Data & Evaluation Scripts** | Python (`3.10+`, tested on `3.14.7`), `pandas` (`>=2.0.0`), `openpyxl` (`>=3.1.0`) |
 | **Dev & Collaboration Tools** | npm (`nodemon` for dev watch mode), Git, GitHub, Windows PowerShell |
 
@@ -125,31 +138,51 @@ To maintain strict academic transparency, PrivacyLens clearly distinguishes betw
 ## 5. System Architecture
 
 ```text
-+-----------------------------------------------------------------------+
-|                   Chrome Browser Extension (Manifest V3)              |
-|                                                                       |
-|  +-----------------------+     Explicit User Click    +-------------+ |
-|  | Popup UI (HTML/CSS/JS)| -------------------------> | extractor.js| |
-|  +-----------+-----------+   (activeTab + scripting)  +-------------+ |
-|              |                                                        |
-+--------------+--------------------------------------------------------+
-               | HTTP / JSON (http://localhost:3000)
-               | (Zero API keys stored in browser extension)
-               v
-+-----------------------------------------------------------------------+
-|                     Express Backend Server (Node.js)                  |
-|                                                                       |
-|  +-----------------------+   +-------------------------------------+  |
-|  | Routes (/api/health,  |   | Middleware (Helmet, CORS, JSON,     |  |
-|  | future /api/analyze)  |   | Zod Env Config, Error Handler)      |  |
-|  +-----------+-----------+   +-------------------------------------+  |
-|              |                                                        |
-|              v                                                        |
-|  +-----------------------------------------------------------------+  |
-|  |         Provider-Independent AI Service Layer                   |  |
-|  |     (BaseAIProvider -> OpenAI / Gemini / Claude Adapters)       |  |
-|  +-----------------------------------------------------------------+  |
-+-----------------------------------------------------------------------+
++-------------------------------------------------------------------------------+
+|                     Chrome Browser Extension (Manifest V3)                    |
+|                                                                               |
+|  +-----------------------------+   Explicit User Click    +-----------------+ |
+|  | Popup UI (popup.html/css/js)| -----------------------> |  extractor.js   | |
+|  |  - Prompt Selector (V1/V2/V3)|  (activeTab + scripting) | (DOM Extraction | |
+|  |  - Saved Result Restoration |                          |  & Noise Filter)| |
+|  |  - History Panel (Max 20)   |                          +-----------------+ |
+|  +--------------+--------------+                                              |
+|                 |  ^                                                          |
+|                 |  | Auto-Save & Zero-Call URL Restoration                    |
+|                 |  v                                                          |
+|  +--------------+--------------+                                              |
+|  |     storage-manager.js      |  (chrome.storage.local: runtime state        |
+|  |  & background/service-worker|   + 20-entry persistent local history)       |
+|  +--------------+--------------+                                              |
++-----------------|-------------------------------------------------------------+
+                  | HTTP / JSON (http://localhost:3000)
+                  | (Zero API keys stored in browser extension)
+                  v
++-------------------------------------------------------------------------------+
+|                         Express Backend Server (Node.js)                      |
+|                                                                               |
+|  +----------------------------------+  +-----------------------------------+  |
+|  | Routes:                          |  | Middleware:                       |  |
+|  |  - GET  /api/health              |  |  - Helmet, Origin-Restricted CORS |  |
+|  |  - POST /api/analyze             |  |  - IP Rate Limiter (15 / 10 min)  |  |
+|  +-----------------+----------------+  |  - Zod Request & Env Validation   |  |
+|                    |                   +-----------------------------------+  |
+|                    v                                                          |
+|  +-------------------------------------------------------------------------+  |
+|  |            Prompt Orchestration Engine (prompt-runner.js)               |  |
+|  |  - V1: 1-Call Baseline + Deterministic Normalizer                       |  |
+|  |  - V2: 3-Call Chained Pipeline (Stage 1 -> Stage 2 -> Stage 3)          |  |
+|  |  - V3: 4-Call Verified Pipeline (Stages 1-3 + Stage 4 Grounding Auditor)|  |
+|  |  - Strict Stage & Unified Output Validation via Zod (schemas.js)        |  |
+|  +-----------------+-----------------------------------+-------------------+  |
+|                    | Default ("ollama")                | Manual ("gemini")    |
+|                    v                                   v                      |
+|  +-----------------------------------+   +---------------------------------+  |
+|  | Primary Local AI: OllamaProvider  |   | Optional Fallback: GeminiProvider|  |
+|  | (http://localhost:11434/api/chat) |   | (@google/genai: gemini-2.5-flash)|  |
+|  | Model: qwen2.5:3b (num_ctx: 8192) |   | (Used ONLY if explicitly passed) |  |
+|  +-----------------------------------+   +---------------------------------+  |
++-------------------------------------------------------------------------------+
 ```
 
 ---
@@ -159,36 +192,42 @@ To maintain strict academic transparency, PrivacyLens clearly distinguishes betw
 ```text
 Privacy_Lens/
 |
-|-- extension/                                  # Chrome Manifest V3 Browser Extension
-|   |-- manifest.json                           # Extension manifest (activeTab, scripting)
+|-- extension/                                  # Chrome Manifest V3 Browser Extension (v0.2.0)
+|   |-- manifest.json                           # Extension manifest (activeTab, scripting, storage)
 |   |-- popup/
-|   |   |-- popup.html                          # Popup UI layout
-|   |   |-- popup.css                           # Navy/white/blue styling
-|   |   |-- popup.js                            # Health check & tab inspection controller
+|   |   |-- popup.html                          # Popup UI layout (Analyze view + History panel)
+|   |   |-- popup.css                           # Navy/white/blue styling, badges & history cards
+|   |   |-- popup.js                            # Extraction, V1/V2/V3 analysis & history controller
+|   |   |-- storage-manager.js                  # chrome.storage.local persistence & 20-entry history
 |   |-- background/
-|   |   |-- service-worker.js                   # Background lifecycle & message listener
+|   |   |-- service-worker.js                   # Background lifecycle & storage key hygiene
 |   |-- content/
-|       |-- extractor.js                        # On-demand page inspection script
+|       |-- extractor.js                        # On-demand DOM privacy policy extractor & cleaner
 |
 |-- server/                                     # Node.js + Express Backend
 |   |-- package.json                            # Server dependencies & npm scripts
 |   |-- package-lock.json                       # Deterministic dependency lockfile
-|   |-- .env.example                            # Safe environment variable template
+|   |-- .env.example                            # Safe environment variable template (Ollama default)
 |   |-- src/
 |       |-- server.js                           # HTTP server entry point (localhost:3000)
 |       |-- app.js                              # Express app, Helmet, CORS, routes
 |       |-- config/
 |       |   |-- env.js                          # dotenv loader & Zod validation schema
 |       |-- routes/
-|       |   |-- health.routes.js                # GET /api/health endpoint
+|       |   |-- health.routes.js                # GET /api/health endpoint (Ollama & provider readiness)
+|       |   |-- analyze.routes.js               # POST /api/analyze endpoint (rate limit, validation, runner)
 |       |-- middleware/
 |       |   |-- error-handler.js                # 404 & global JSON error middleware
 |       |-- services/
 |           |-- ai/
-|               |-- provider-interface.js       # Abstract BaseAIProvider contract
-|               |-- openai.provider.js          # OpenAI SDK adapter foundation
-|               |-- gemini.provider.js          # Google GenAI SDK adapter foundation
-|               |-- claude.provider.js          # Anthropic SDK adapter foundation
+|           |   |-- provider-interface.js       # Abstract BaseAIProvider contract
+|           |   |-- ollama.provider.js          # Primary Local Ollama provider (qwen2.5:3b)
+|           |   |-- gemini.provider.js          # Optional manual Google GenAI provider (gemini-2.5-flash)
+|           |   |-- openai.provider.js          # OpenAI SDK adapter foundation
+|           |   |-- claude.provider.js          # Anthropic SDK adapter foundation
+|           |-- prompt/
+|               |-- schemas.js                  # Zod schemas & JSON schema blocks for Stages 1-4 & V1
+|               |-- prompt-runner.js            # V1/V2/V3 multi-stage prompt orchestrator
 |
 |-- prompts/                                    # Prompt Engineering Core (Phase 2)
 |   |-- README.md                               # Prompt workspace overview
@@ -329,18 +368,27 @@ Our evaluation framework in [`evaluation/`](./evaluation/README.md) is built aro
 
 ---
 
-## 11. Environment Variable Configuration & API Provider Status
+## 11. Environment Variable Configuration, Persistent History & Known Limitations
 
 `server/.env.example` defines the following variables:
 
 | Variable | Default | Required Now? | Description |
 | :--- | :--- | :---: | :--- |
 | `PORT` | `3000` | Yes (has default) | Local port for the Express backend server (`http://localhost:3000`). |
-| `OPENAI_API_KEY` | *(empty)* | No (Phase 5+) | Secret API key for OpenAI (`openai` SDK). Never expose in frontend code. |
-| `GEMINI_API_KEY` | *(empty)* | No (Phase 5+) | Secret API key for Google Gemini (`@google/genai` SDK). |
-| `ANTHROPIC_API_KEY` | *(empty)* | No (Phase 5+) | Secret API key for Anthropic Claude (`@anthropic-ai/sdk`). |
+| `DEFAULT_AI_PROVIDER` | `ollama` | Yes (has default) | Primary AI provider (`ollama` for local-first execution; `gemini` optional). |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Yes (has default) | Local Ollama server base URL (enforced as `localhost` / `127.0.0.1` only). |
+| `OLLAMA_MODEL` | `qwen2.5:3b` | Yes (has default) | Local Ollama model tag used for V1, V2, and V3 analyses. |
+| `OLLAMA_CONTEXT_LENGTH` | `8192` | Yes (has default) | Context window (`num_ctx`) tuned for 100% GPU execution on 4 GB VRAM GPUs. |
+| `GEMINI_API_KEY` | *(empty)* | No (Optional) | Optional secret API key for manual Google Gemini (`gemini-2.5-flash`) fallback. |
+| `OPENAI_API_KEY` | *(empty)* | No (Optional) | Secret API key placeholder for OpenAI (`openai` SDK). |
+| `ANTHROPIC_API_KEY` | *(empty)* | No (Optional) | Secret API key placeholder for Anthropic Claude (`@anthropic-ai/sdk`). |
 
-- **Current API Provider Status:** All three official SDK adapters are installed and wired to the `BaseAIProvider` interface in `server/src/services/ai/`. `GET /api/health` reports boolean readiness flags (`openaiConfigured`, `geminiConfigured`, `anthropicConfigured`) without ever exposing key values. **All current Phase 1–4 features work completely offline without any API keys.**
+- **Current AI Provider Status:** `ollama` (`qwen2.5:3b` on `http://localhost:11434`) is the active default provider for V1, V2, and V3 analyses. `gemini` (`gemini-2.5-flash`) is preserved strictly as a manually requested fallback (`"provider": "gemini"`). PrivacyLens never automatically switches to Gemini if Ollama is offline.
+- **Persistent Results & Local History (`chrome.storage.local`):** Implemented in `extension/popup/storage-manager.js`. Completed V1/V2/V3 results are automatically saved to `chrome.storage.local` (`privacylens_analysis_history`) using normalized URL keys, automatically restored when reopening the popup or returning to an analyzed website (`0` AI calls), and managed through a 20-entry **History (`N`)** view with offline report viewing, individual deletion, confirmed **Clear All**, quota auto-pruning, and interrupted-session handling.
+- **Known Technical Limitations:**
+  1. Closing the Chrome extension popup while an HTTP `fetch` request is still in progress interrupts that in-flight request (reopening restores any previous completed result and notifies the user).
+  2. Local context length is capped at `8,192` tokens (`58,000` characters extracted) to preserve 100% GPU offloading on 4 GB VRAM GPUs.
+  3. In Prompt V3, Stage 4 (Independent Accuracy & Grounding Auditor) runs as a fresh verification pass on the same local `qwen2.5:3b` model (`temperature: 0.1`).
 
 ---
 

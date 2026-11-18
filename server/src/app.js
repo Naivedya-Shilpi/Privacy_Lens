@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const healthRoutes = require('./routes/health.routes');
+const analyzeRoutes = require('./routes/analyze.routes');
 const { notFoundHandler, errorHandler } = require('./middleware/error-handler');
 
 const app = express();
@@ -33,8 +34,23 @@ app.use(
 // Parse incoming JSON payloads
 app.use(express.json({ limit: '1mb' }));
 
+// Normalize body-parser syntax and payload-size errors before global error handler
+app.use((err, _req, _res, next) => {
+  if (err && err.type === 'entity.parse.failed') {
+    err.statusCode = 400;
+    err.code = 'INVALID_JSON_BODY';
+    err.message = 'Malformed JSON in request body.';
+  } else if (err && err.type === 'entity.too.large') {
+    err.statusCode = 413;
+    err.code = 'PAYLOAD_TOO_LARGE';
+    err.message = 'Request payload exceeds the maximum allowed size limit (1MB).';
+  }
+  next(err);
+});
+
 // API Routes
 app.use('/api', healthRoutes);
+app.use('/api', analyzeRoutes);
 
 // 404 & Global Error Handling
 app.use(notFoundHandler);

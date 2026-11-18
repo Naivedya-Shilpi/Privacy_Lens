@@ -8,6 +8,7 @@
 </head>
 <body>
   <div class="app-container">
+    <!-- A. Header -->
     <header class="header">
       <div class="brand">
         <div class="brand-icon" aria-hidden="true">
@@ -17,61 +18,212 @@
           </svg>
         </div>
         <div class="brand-text">
-          <h1>PrivacyLens</h1>
-          <span class="badge">v0.1.0 Foundation</span>
+          <div class="brand-title-row">
+            <h1>PrivacyLens</h1>
+            <span class="version-tag">v0.2.0</span>
+          </div>
+          <p class="brand-subtitle">Understand privacy policies before you agree.</p>
         </div>
       </div>
-      <div id="status-pill" class="status-pill status-unknown" title="Backend Server Connection Status">
+      <button id="status-pill" class="status-pill status-unknown" type="button" title="Click to re-check backend connection">
         <span class="status-dot"></span>
-        <span id="status-text">Unchecked</span>
-      </div>
+        <span id="status-text">Checking...</span>
+      </button>
     </header>
 
     <main class="main-content">
-      <section class="card description-card">
-        <h2>Terms &amp; Privacy in Plain Language</h2>
-        <p>
-          PrivacyLens helps you understand website privacy policies and terms of service before you agree—highlighting data collection, usage, third-party sharing, user rights, and notable clauses with original policy excerpts.
-        </p>
-        <p class="disclaimer">
-          Informational companion only. Does not provide legal advice or automated legal compliance guarantees.
+      <!-- B. Page Information Card -->
+      <section id="page-info-card" class="card page-card">
+        <div class="card-header-row">
+          <span class="section-kicker">Current Webpage</span>
+          <span id="extraction-badge" class="pill-badge pill-neutral">Inspecting...</span>
+        </div>
+        <div id="page-title" class="page-title">Detecting active tab...</div>
+        <div id="page-domain" class="page-domain">—</div>
+        <p id="extraction-detail" class="extraction-detail">
+          Checking readable policy text on the active tab...
         </p>
       </section>
 
+      <!-- C. AI Provider & Prompt Version Selection -->
+      <section class="card version-card">
+        <div class="card-header-row">
+          <span class="section-kicker">AI Engine &amp; Privacy Mode</span>
+          <span id="active-provider-pill" class="provider-pill provider-pill-local">
+            Local AI: Ollama • Qwen2.5 3B
+          </span>
+        </div>
+
+        <div class="provider-selector-group">
+          <label for="provider-select" class="provider-select-label">Inference Provider</label>
+          <select id="provider-select" class="provider-select">
+            <option value="ollama" selected>
+              Local AI: Ollama — Qwen2.5 3B (Default • 100% On-Device)
+            </option>
+            <option value="gemini">
+              Cloud Fallback: Google Gemini — Gemini 2.5 Flash (Manual Selection Only)
+            </option>
+          </select>
+          <p id="privacy-mode-note" class="privacy-mode-note">
+            Local-First Mode: Policy text is processed entirely on your computer via Ollama (Qwen2.5 3B) and is never sent to any external server.
+          </p>
+        </div>
+
+        <div class="card-header-row version-sub-header">
+          <span class="section-kicker">Prompt Engineering Architecture</span>
+        </div>
+
+        <div class="version-options" role="radiogroup" aria-label="Select Prompt Version">
+          <label class="version-option" for="version-v1">
+            <input type="radio" id="version-v1" name="promptVersion" value="v1" />
+            <div class="version-content">
+              <div class="version-title-row">
+                <span class="version-name">V1: Single-Pass Baseline</span>
+                <span class="version-meta-tag tag-baseline">1 Call • Baseline</span>
+              </div>
+              <p class="version-desc">
+                Milestone 1 single-pass zero-shot prompt with deterministic post-hoc mapping. Unverified baseline.
+              </p>
+            </div>
+          </label>
+
+          <label class="version-option" for="version-v2">
+            <input type="radio" id="version-v2" name="promptVersion" value="v2" />
+            <div class="version-content">
+              <div class="version-title-row">
+                <span class="version-name">V2: Three-Stage Chained Analysis</span>
+                <span class="version-meta-tag tag-candidate">3 Calls • Candidate</span>
+              </div>
+              <p class="version-desc">
+                Stage 1 Clause Extraction → Stage 2 Privacy &amp; Risk Analysis → Stage 3 Plain-Language Synthesis. Unverified candidate.
+              </p>
+            </div>
+          </label>
+
+          <label class="version-option version-option-selected" for="version-v3">
+            <input type="radio" id="version-v3" name="promptVersion" value="v3" checked />
+            <div class="version-content">
+              <div class="version-title-row">
+                <span class="version-name">V3: Four-Stage Verified Analysis</span>
+                <span class="version-meta-tag tag-verified">4 Calls • Verified (Default)</span>
+              </div>
+              <p class="version-desc">
+                Adds Stage 4 Independent Auditor checking every claim, quote, and missing-info note against the original policy.
+              </p>
+            </div>
+          </label>
+        </div>
+      </section>
+
+      <!-- D. Analysis Controls & Manual Policy Input -->
       <section class="card actions-card">
         <button id="analyze-btn" class="btn btn-primary" type="button">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/>
             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
-          <span>Analyze This Page</span>
+          <span id="analyze-btn-label">Analyze Current Page</span>
         </button>
 
-        <button id="test-conn-btn" class="btn btn-secondary" type="button">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-          </svg>
-          <span>Test Server Connection</span>
-        </button>
+        <div class="secondary-actions-row secondary-actions-three">
+          <button id="toggle-manual-btn" class="btn btn-secondary" type="button" aria-expanded="false">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            </svg>
+            <span id="toggle-manual-label">Manual Paste</span>
+          </button>
+
+          <button id="toggle-history-btn" class="btn btn-secondary" type="button" aria-expanded="false">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span id="toggle-history-label">History (0)</span>
+          </button>
+
+          <button id="reset-btn" class="btn btn-secondary" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+            </svg>
+            <span>Clear View</span>
+          </button>
+        </div>
+
+        <!-- Collapsible Manual Input Panel -->
+        <div id="manual-panel" class="manual-panel hidden">
+          <div class="manual-header-row">
+            <label for="manual-policy-input" class="manual-label">Paste Privacy Policy or Terms Text</label>
+            <span id="manual-char-count" class="char-counter">0 / 60,000 chars (min 40)</span>
+          </div>
+          <textarea
+            id="manual-policy-input"
+            class="manual-textarea"
+            rows="5"
+            placeholder="Paste privacy policy text here (40 to 60,000 characters)..."
+          ></textarea>
+          <div class="manual-actions-row">
+            <button id="analyze-manual-btn" class="btn btn-primary btn-sm" type="button">
+              Analyze Pasted Policy
+            </button>
+            <button id="clear-manual-btn" class="btn btn-secondary btn-sm" type="button">
+              Clear Text
+            </button>
+          </div>
+        </div>
+
+        <!-- Collapsible Local Analysis History Panel -->
+        <div id="history-panel" class="history-panel hidden">
+          <div class="history-header-row">
+            <span class="manual-label">Saved Local History (Max 20)</span>
+            <button id="clear-history-btn" class="btn-link-danger" type="button">
+              Clear All
+            </button>
+          </div>
+
+          <div id="clear-confirm-bar" class="clear-confirm-bar hidden">
+            <span class="clear-confirm-text">Delete all saved analyses from this device?</span>
+            <div class="clear-confirm-actions">
+              <button id="confirm-clear-btn" class="btn-danger-xs" type="button">Yes, Clear All</button>
+              <button id="cancel-clear-btn" class="btn-neutral-xs" type="button">Cancel</button>
+            </div>
+          </div>
+
+          <p id="history-empty-msg" class="history-empty-msg">
+            No saved policy analyses yet. Completed analyses are saved automatically on this computer.
+          </p>
+          <div id="history-list" class="history-list"></div>
+        </div>
       </section>
 
+      <!-- E. Analysis Status & Progress Panel -->
       <section id="feedback-panel" class="card feedback-card" aria-live="polite">
         <div class="feedback-header">
-          <span id="feedback-title" class="feedback-title">System Status</span>
+          <div class="feedback-title-group">
+            <span id="loading-spinner" class="spinner hidden" aria-hidden="true"></span>
+            <span id="feedback-title" class="feedback-title">Ready</span>
+          </div>
+          <span id="elapsed-timer" class="elapsed-timer hidden">0s</span>
         </div>
         <p id="feedback-message" class="feedback-message">
-          Ready. Click "Test Server Connection" to verify the local backend, or "Analyze This Page" to test active tab inspection.
+          Select a prompt version (V1, V2, or V3) and click "Analyze Current Page" or "Manual Paste".
         </p>
+        <ul id="stage-timeline" class="stage-timeline hidden"></ul>
         <pre id="feedback-details" class="feedback-details hidden"></pre>
       </section>
+
+      <!-- F. Structured Analysis Results Container -->
+      <div id="results-container" class="results-container hidden"></div>
     </main>
 
     <footer class="footer">
-      <span>Team ladybug • Problem C18</span>
-      <span>SCSE4041</span>
+      <span>Informational companion only • Not legal advice</span>
+      <span>Team ladybug • C18</span>
     </footer>
   </div>
 
+  <script src="storage-manager.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
