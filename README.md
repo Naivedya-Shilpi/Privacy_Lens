@@ -375,11 +375,12 @@ Our evaluation framework in [`evaluation/`](./evaluation/README.md) is built aro
 | Variable | Default | Required Now? | Description |
 | :--- | :--- | :---: | :--- |
 | `PORT` | `3000` | Yes (has default) | Local port for the Express backend server (`http://localhost:3000`). |
-| `DEFAULT_AI_PROVIDER` | `ollama` | Yes (has default) | Primary AI provider (`ollama` for local-first execution; `gemini` optional). |
+| `AI_PROVIDER` | `ollama` | Yes (has default) | Primary AI provider (`ollama` for local-first execution; `gemini` optional). |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Yes (has default) | Local Ollama server base URL (enforced as `localhost` / `127.0.0.1` only). |
 | `OLLAMA_MODEL` | `qwen2.5:3b` | Yes (has default) | Local Ollama model tag used for V1, V2, and V3 analyses. |
 | `OLLAMA_CONTEXT_LENGTH` | `8192` | Yes (has default) | Context window (`num_ctx`) tuned for 100% GPU execution on 4 GB VRAM GPUs. |
 | `GEMINI_API_KEY` | *(empty)* | No (Optional) | Optional secret API key for manual Google Gemini (`gemini-2.5-flash`) fallback. |
+| `GEMINI_MODEL` | `gemini-2.5-flash` | No (has default) | Google Gemini model tag when manual fallback is selected. |
 | `OPENAI_API_KEY` | *(empty)* | No (Optional) | Secret API key placeholder for OpenAI (`openai` SDK). |
 | `ANTHROPIC_API_KEY` | *(empty)* | No (Optional) | Secret API key placeholder for Anthropic Claude (`@anthropic-ai/sdk`). |
 
